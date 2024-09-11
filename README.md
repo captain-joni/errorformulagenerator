@@ -8,7 +8,7 @@ Usage
 
 Plot the formula, that you want to calculate the Gaussian Errorformula for, in the first Input Field.
 
-![](/pictues/pic_1.png)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_1.png?raw=true)
 
 ### Beware
 
