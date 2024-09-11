@@ -36,7 +36,7 @@ app.post('/api/differentiate', (req, res) => {
 });
 
 
-
+// Api route furs formel anzeigen
 app.post('/api/formel-anzeigen', (req, res) => {
     const { formula} = req.body;
 
@@ -70,38 +70,38 @@ app.post('/api/calc', (req, res) => {
     // Starten des Python-Skripts
     const py = spawn('py', ['calc.py']);
     
-    // Schreibe die JSON-Daten in das stdin des Python-Prozesses
+   
     py.stdin.write(JSON.stringify(data));
     py.stdin.end();
     
     let stdout = '';
     let stderr = '';
     
-    // Fange die Daten von stdout auf (Ergebnisse vom Python-Skript)
+   
     py.stdout.on('data', (data) => {
         stdout += data.toString();
     });
     
-    // Fange Fehler auf stderr auf (wenn es welche gibt)
+
     py.stderr.on('data', (data) => {
         stderr += data.toString();
     });
     
-    // Wenn der Python-Prozess beendet ist
+
     py.on('close', (code) => {
         if (code !== 0) {
             console.log(`Python-Skript endete mit Fehlercode ${code}`);
             return res.status(500).json({ error: stderr });
         }
     
-        // Schicke die Ausgabe von Python als JSON-Antwort zurück
+        
         res.json({ result: stdout });
     });
     
 
 });
 
-// Starte den Server
+
 app.listen(port, () => {
     console.log(`Server läuft auf http://localhost:${port}`);
 });
