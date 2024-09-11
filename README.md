@@ -92,7 +92,7 @@ By pressing this Button, the error Formula will be generated.
 
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_5.png?raw=true)
 
-And you will be promted with the output json, where you can extract the Latex Code of the Formula, the pythonian equation and the Latex Code Rendered, so you can check for errors again.
+And you will be promted with the output json, where you can extract the Latex Code of the Formula, the pythonian equation and the Latex Code Rendered, so you can check for errors again. The error Formula will be generated without the square root, because for longer equations it is easier to tex. The calculated value below will be with the square root.
 
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_6.png?raw=true)
 
@@ -111,6 +111,7 @@ Everytime you click, or change/add a Variable in this field, new html input fiel
 Plot in your Values for the Variables and their Error. If a Variable has no error, just type 0 (zero). (Every field must be filled out).
 
 After that click on ‘Rechne,Computer!’ and recieve your Values:
+Note that here the computation is done with the square root, so you dont have to take the square root of this value!
 
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_9.png?raw=true)
 
