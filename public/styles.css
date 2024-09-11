@@ -1,0 +1,85 @@
+textarea, input {
+    color: #333; 
+    background-color: #e7cae3af; 
+    border: 1px solid #ccc;
+    padding: 10px; 
+    box-sizing: border-box; 
+    width: 100%; 
+    margin: 10px 0; 
+}
+
+
+textarea {
+    height: 50px; 
+    resize: vertical;
+}
+
+input[type="text"] {
+    height: 40px; 
+}
+
+.form-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 150px); 
+    gap: 20px; 
+    justify-content: center; 
+    
+}
+
+
+button {
+    background-color: #007bff; 
+    color: white;
+    border: none; 
+    border-radius: 5px; 
+    padding: 10px 20px;
+    font-size: 16px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+    width: 100%;
+    text-align: center; 
+}
+
+
+button:hover {
+    background-color: #0056b3; 
+}
+
+
+@media (max-width: 400px) {
+    .form-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+.spendenbutton {
+    background-color: #23303f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-top: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.9s ease;
+}
+
+
+.variabletext {
+    color: #333; 
+    background-color: #e7cae3af; 
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 10px 0; 
+    height: 40px; 
+    margin-bottom: 50px;
+}
+.spendenbutton:hover {
+    background-color: #d23fe6;
+}
+
+.frontext {
+    margin-bottom: 30px;
+}
