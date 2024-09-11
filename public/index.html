@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <title>Error Formel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        input, textarea, button {
+            display: block;
+            margin: 10px 0;
+        }
+        .dynamic-input {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Captain Joni's - Fehlerformel Generator</h1>
+    <div class="frontext">
+        Na ihr PaP-Nasen, kein Bock auf Fehlerrechnung? <br>
+        Ich auch nicht! <br>
+        Dieser Fehlerformel Generator darf allen verlorenen Seelen helfen, die Ihre Protokolle etwas schneller schreiben wollen. 
+        Aber dieser Generator ist crude zusammengewürfel und nicht nutzerfreundlich! <br>
+        Damit du ihn also benutzen kannst, lese bitte die Dokumentation, die du     <a href="https://paypal.me/captainjoni" target="_blank">
+            hier
+        </a> finden kannst. <br>
+        Und nochmal für Blinde: <a href="https://paypal.me/captainjoni" target="_blank">
+            Dokumentation - How to use me
+        </a> <br>
+        Bugs bitte auch auf Github reporten (es gibt viele). <br>
+        Habt euch gegenseitig schön lieb und denkt dran: <br>
+        Too much thinking kills the joy ~ Captain Joni &#10084;
+    </div>
+
+
+    <form id="formulaForm">
+        <label for="formula">Gib hier deine Forme ein: (im Pyhon Formel Format z.B (1)/(2)* m* v**2)</label>
+        <textarea id="formula" rows="4" cols="50"></textarea>
+
+        <label for="variables_2">Welche Variablen sind Fehlerbehaftet? (kommagetrennt)</label>
+        <input type="text" id="variables_2" />
+      
+
+
+        <div class="form-buttons">
+            <button id="tex-anzeigen">Tex anzeigen</button>
+            <button id="fehlerformel">Fehlerformel berechnen</button>
+        </div>
+        
+    
+    </form>
+
+    <h2>Formel zum Überprüfen:</h2>
+    <div id="latex-output_2"></div>
+
+    <h2>Fehlerformel:</h2>
+    <pre id="response"></pre>
+    <div id="latex-output"></div>
+    <h2> Berechnen</h2>
+    <label for="variables">Mit welchen Variablen soll gerechnet werden?</label>
+    <input class="variabletext" type="text" id="variables" />
+    <div id="variable-container"></div>
+    <button id="ausrechnen"> Rechne, Computer!</button>
+    <div id="losung"> </div>
+
+    <a href="https://paypal.me/captainjoni" target="_blank">
+        <button class="spendenbutton" type="button">Support me and buy me a Tea</button>
+    </a>
+    
+
+    <script>
+        
+        function updateVariableInputs() {
+            const variables = document.getElementById('variables').value.split(',').map(v => v.trim());
+            const container = document.getElementById('variable-container');
+            container.innerHTML = '';
+
+            variables.forEach((variable, index) => {
+                if (variable) {
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'dynamic-input';
+
+                    const label = document.createElement('label');
+                    label.textContent = `Variable ${variable}:`;
+                    inputDiv.appendChild(label);
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `var_${index + 1}`;
+                    input.name = `var_${index + 1}`;
+                    input.placeholder = `Wert für ${variable}`;
+                    inputDiv.appendChild(input);
+
+                    container.appendChild(inputDiv);
+
+
+                    const input_1 = document.createElement('input');
+                    input_1.type = 'text';
+                    input_1.id = `delta_var_${index + 1}`;
+                    input_1.name = `delta_var_${index + 1}`;
+                    input_1.placeholder = `Fehler für ${variable}`;
+                    inputDiv.appendChild(input_1);
+
+                    container.appendChild(inputDiv);
+
+
+
+
+
+                }
+            });
+        }
+
+
+     
+        
+        document.getElementById('variables').addEventListener('input', updateVariableInputs);
+
+
+
+        let errorFormulas;
+
+
+        document.getElementById('ausrechnen').addEventListener('click', function(e) {
+            e.preventDefault();
+    
+            
+            let variablesData = {};
+
+            
+            const variables = document.getElementById('variables').value.split(',').map(v => v.trim());
+
+            variables.forEach((variable, index) => {
+                
+                const variableValue = document.getElementById(`var_${index + 1}`).value;
+                
+                const variableError = document.getElementById(`delta_var_${index + 1}`).value;
+
+                
+                variablesData[variable] = {
+                    value: variableValue,
+                    error: variableError
+                };
+            });
+
+            
+            const formulaOriginal = document.getElementById('formula').value;
+   
+            const formulas_1 = {
+                Original: formulaOriginal,
+                errorFormula: errorFormulas
+            };
+
+            const wholeData = {
+                formulas: formulas_1,
+                werte: variablesData
+            };
+
+           
+            fetch('/api/calc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(wholeData)  // JSON-Objekt senden
+            })
+            .then(response => response.json())
+            .then(data => {
+                const result = data.result;  /
+                const resultOutputDiv = document.getElementById('losung');
+                resultOutputDiv.textContent = `Ergebnis: ${result}`;
+            })
+            .catch(error => {
+                console.error('Fehler:', error);
+            });
+        });
+
+
+
+
+
+        document.getElementById('tex-anzeigen').addEventListener('click', function(e) {
+            e.preventDefault();
+            const formula = document.getElementById('formula').value;
+            fetch('/api/formel-anzeigen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ formula })
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                let stringifiedData = JSON.stringify(data, null, 2);
+                stringifiedData = stringifiedData.replace(/\\\\/g, '\\');
+
+               
+                const latexCode = data.result;
+                const latexOutputDiv = document.getElementById('latex-output_2');
+                latexOutputDiv.textContent = `$$ ${latexCode}$$`;
+                MathJax.typesetPromise([latexOutputDiv]);
+            });
+        }); 
+
+        document.getElementById('fehlerformel').addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const formula = document.getElementById('formula').value;
+            const variables = document.getElementById('variables_2').value.split(',');
+
+            fetch('/api/differentiate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ formula, variables })
+            })
+            .then(response => response.json())
+            .then(data => {
+               
+                let stringifiedData = JSON.stringify(data, null, 2);
+                stringifiedData = stringifiedData.replace(/\\\\/g, '\\');
+                errorFormulas = data.equation;
+
+
+                document.getElementById('response').textContent = stringifiedData;
+
+                
+                const latexCode = data.result;
+                const latexOutputDiv = document.getElementById('latex-output');
+                latexOutputDiv.textContent = `$$${latexCode}$$`;
+                MathJax.typesetPromise([latexOutputDiv]);
+            })
+            .catch(error => {
+                console.error('Fehler:', error);
+            });
+        });
+    </script>
+</body>
+</html>
