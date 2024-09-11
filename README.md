@@ -19,8 +19,8 @@ Examples:
 |     |     |     |
 | --- | --- | --- |
 | Formula | Latex | Python Equation Format |
-| \\(\\frac{1}{2}mv^2\\) | \\frac{1}{2}mv^2 | (1)/(2)\*m\*v\*\*2 |
-| \\(\\frac{1}{g^2}\\) | \\frac{1}{g^2} | (1)/(g\*\*2) |
+| $(\\frac{1}{2}mv^2)$ | \\frac{1}{2}mv^2 | (1)/(2)\*m\*v\*\*2 |
+| $(\\frac{1}{g^2})$ | \\frac{1}{g^2} | (1)/(g\*\*2) |
 | denk dir selbst | ein | weites Beispiel aus |
 
 #### Note:
@@ -52,7 +52,7 @@ For the Erroformula, the Program needs to know which Variables have Errors.
 Input the Variables (!!exactly like in the formula!!) into the second Field and seperate them via Kommas.  
 It is fine, that the formula has more Variables that what you put in here.
 
-![](api/images/WkHI8NnxxtQx/grafik.png)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_2.png?raw=true)
 
 ### Note
 
@@ -78,9 +78,10 @@ Check your formating
 
 You can check if you ploted the equation the right way, by pressing:
 
-![](api/images/RlwHyi85XCxX/grafik.png)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_3.png?raw=true)
 
-![](api/images/hrvYEi8Kez1C/grafik.png)
+
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_4.png?raw=true)
 
 Then your equation will be generated into Latex, so you can check for mistakes. (They happen often, so doublecheck)!
 
@@ -89,8 +90,57 @@ Calculate the Errorformula
 
 By pressing this Button, the error Formula will be generated.
 
-![](api/images/cGE49QI7MKxn/grafik.png)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_5.png?raw=true)
 
 And you will be promted with the output json, where you can extract the Latex Code of the Formula, the pythonian equation and the Latex Code Rendered, so you can check for errors again.
 
-![](api/images/V7jJTQbjtysL/grafik.png)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_6.png?raw=true)
+
+Calculate
+---------
+
+If you want to calculate the Equation with the respective Error, you can now procced to the “Berechnen Section”
+
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_7.png?raw=true)
+
+In this field you will need to enter \*every\* Variable that is used in the Formula, since now the Calculater wants to calculate the eqautions numericaly. Seperate the Variables with kommas, like before.   
+Everytime you click, or change/add a Variable in this field, new html input fields for the corresponding Variable will be generated.
+
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_8.png?raw=true)
+
+Plot in your Values for the Variables and their Error. If a Variable has no error, just type 0 (zero). (Every field must be filled out).
+
+After that click on ‘Rechne,Computer!’ and recieve your Values:
+
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_9.png?raw=true)
+
+### Note
+
+Remeber to use a Point ‘ . ’ instead of commas, ‘ , ’
+
+Dont: 0,005, but instead: 0.005 (otherwise the calculation will fail)
+
+Expressions like 5\*10\*\*-3 are not permitted yet. Just write it out:
+
+Dont: 5\*10\*\*-3 but instead: 0.005
+
+Some of the Calculation features do not work yet (will they ever?).   
+For example, it is not yet possible to calculate a sin cos,tan etc.
+
+If you have Equations with those in it, use the pythonian equation for the error that is prometed on the output beneave the Latex Code and use it in Python oder Wolframalpha.
+
+Undefined
+---------
+
+If you encounter this, either you made a mistake, or you found another symbol that doens't work.   
+Text me, open an issue, or play with the generator until it works. 
+
+### Bugs
+
+Known Bugs:  
+ 
+
+*   sin, cos, tan not working
+*   Q and I not working as characters
+
+
