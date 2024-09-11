@@ -8,7 +8,7 @@ Usage
 
 Plot the formula, that you want to calculate the Gaussian Errorformula for, in the first Input Field.
 
-![](api/images/3Ahaf6Bmksq5/grafik.png)
+![](/pictues/pic_1.png)
 
 ### Beware
 
