@@ -10,17 +10,14 @@ data = json.loads(sys.stdin.read())
 original_formula = str(data['formulas']['Original'])
 error_formula = str(data['formulas']['errorFormula'])
 
-#print(f"Originalformel: {original_formula}")
-#print(f"Fehlerformel: {error_formula}")
 
-# Variablenwerte und Fehler dynamisch verarbeiten
+# Variablenwerte und Fehler verarbeiten
 for variable, values in data['werte'].items():
-    globals()[variable] = float(values['value'])  # Dynamisch Variable erstellen
+    globals()[variable] = float(values['value'])  
     delta_var_name = f"Delta{variable}"
     globals()[delta_var_name] = float(values['error'])  # Fehlerwert dynamisch zuweisen
-    #print(f"{variable} = {globals()[variable]}, {delta_var_name} = {globals()[delta_var_name]}")
 
-# Weitere Berechnungen können hier stattfinden
+
 ergebniss1 = eval(original_formula)
 ergebniss2 = eval(error_formula)
 ergebniss3 = np.float64(ergebniss2)
@@ -31,12 +28,8 @@ result = {
     'errorwert': ergebniss4
 }
 
+#WoooWW WAASSS du liest dir actualy meinen Code durch?
+# Du musst kaputt sein. Aber naja du hast nun ein weiteres Captain Easteregg gefunden. Schreibe mir dein Lieblingsbuchgenre an (easteregg@joni.info) oder auf der Kommunikationsplattform deiner Wahl
 
-# Beispiel: Rückgabe von irgendeinem Ergebnis
-#result = {
-#    "message": "Berechnung erfolgreich",
-#    "Ergebniss": ergebniss1
-#}
-
-# Schicke das Ergebnis zurück an stdout
+# Ausgabe an stdout
 print(json.dumps(result))
