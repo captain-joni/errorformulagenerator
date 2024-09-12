@@ -47,7 +47,7 @@ for i in anzahl_variablen_2:
 equation = str()
 for i in anzahl_variablen_2:
     if i == 0:
-        equation = "(" +  str(speicher_2["d_0"]) + "*" + speicher_delta["delta_0"] + ")**2"
+        equation = "((" +  str(speicher_2["d_0"]) + ")*" + speicher_delta["delta_0"] + ")**2"
     else:
         new_string = " + (" + str(speicher_2[f"d_{i}"]) + "*" + speicher_delta[f"delta_{i}"] + ")**2" 
         equation += new_string
