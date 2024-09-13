@@ -8,6 +8,7 @@ data = json.loads(sys.stdin.read())
 
 # Formeln extrahieren
 original_formula = str(data['formulas']['Original'])
+original_formula_neu = original_formula.replace("sin(", "np.sin(").replace("cos(", "np.cos(").replace("exp(","np.exp(").replace("tan(","np.tan(").replace("pi","np.pi").replace("arcsin(","np.arcsin(").replace("arccos(","np.arccos(").replace("arctan(","np.arctan(")
 error_formula = str(data['formulas']['errorFormula'])
 
 
@@ -18,7 +19,7 @@ for variable, values in data['werte'].items():
     globals()[delta_var_name] = float(values['error'])  # Fehlerwert dynamisch zuweisen
 
 
-ergebniss1 = eval(original_formula)
+ergebniss1 = eval(original_formula_neu)
 ergebniss2 = eval(error_formula)
 ergebniss3 = np.float64(ergebniss2)
 ergebniss4 = np.sqrt(ergebniss3)
