@@ -8,7 +8,7 @@ data = json.loads(sys.stdin.read())
 
 # Formeln extrahieren
 original_formula = str(data['formulas']['Original'])
-original_formula_neu = original_formula.replace("sin(", "np.sin(").replace("cos(", "np.cos(").replace("exp(","np.exp(").replace("tan(","np.tan(").replace("pi","np.pi").replace("arcsin(","np.arcsin(").replace("arccos(","np.arccos(").replace("arctan(","np.arctan(")
+original_formula_neu = original_formula.replace("sin(", "np.sin(").replace("cos(", "np.cos(").replace("exp(","np.exp(").replace("tan(","np.tan(").replace("pi","np.pi")
 error_formula = str(data['formulas']['errorFormula'])
 
 
