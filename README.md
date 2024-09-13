@@ -127,6 +127,7 @@ Dont: 5\*10\*\*-3 but instead: 0.005
 
 Some of the Calculation features do not work yet (will they ever?).   
 For example, it is not yet possible to calculate a sin cos,tan etc.
+*Update* You can now calculate with pi (just writing pi). with the sin, cos and tan, and also exp().
 
 If you have Equations with those in it, use the pythonian equation for the error that is prometed on the output beneave the Latex Code and use it in Python oder Wolframalpha.
 
