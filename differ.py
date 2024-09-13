@@ -54,7 +54,7 @@ for i in anzahl_variablen_2:
 
 getexte_eq = py2tex(equation,print_formula=False, print_latex=False)
 
-bessere_eq = equation.replace("sin(", "np.sin(").replace("cos(", "np.cos(").replace("exp(","np.exp(").replace("tan(","np.tan(").replace("pi","np.pi").replace("arcsin(","np.arcsin(").replace("arccos(","np.arccos(").replace("arctan(","np.arctan(")
+bessere_eq = equation.replace("sin(", "np.sin(").replace("cos(", "np.cos(").replace("exp(","np.exp(").replace("tan(","np.tan(").replace("pi","np.pi")
 
 #Ausgabe
 print(getexte_eq, "&",bessere_eq)
