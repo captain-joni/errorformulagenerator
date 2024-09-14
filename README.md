@@ -11,7 +11,7 @@ Plot the formula, that you want to calculate the Gaussian Errorformula for, in t
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_1.png?raw=true)
 
 ### Beware
-
+DON'T write' E = (1)/(2)*m*v**2 ', but leave the "E = " out. So just write: (1)/(2)*m*v**2 into the Field!
 The Format \*needs\* to be in the pythonian equation format (i dont know if that exists, but you get what i mean, when lookin at those examples):
 
 Examples:
