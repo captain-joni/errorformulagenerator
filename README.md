@@ -3,6 +3,27 @@ Indroduction
 
 No one needs introductions, everyones hates them, so we leave it out
 
+Running it
+----------
+
+Locally, without Docker:
+
+```
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 3000
+```
+
+Then open `http://localhost:3000`.
+
+With Docker, standalone (no reverse proxy):
+
+```
+docker compose -f docker-compose.local.yml up --build
+```
+
+`docker-compose.yml` is the production config (Traefik-routed, external network) used for the
+`error.joni.science` deployment — you don't need it for local use.
+
 Usage
 -----
 
@@ -56,20 +77,8 @@ It is fine, that the formula has more Variables that what you put in here.
 
 ### Note
 
-There are a lot of Variables like Capital I or Capital Q, which DO NOT WORK.  
-You need to use dummy variables (like smal q and then change it afterwards).
-
-|     |     |
-| --- | --- |
-| Doesnt | WORk |
-| Capital Q | Q   |
-| Capital I | I   |
-|     |     |
-|     |     |
-|     |     |
-|     |     |
-
-This list ist constantly updated, help me expand it!
+Older versions of this generator couldn't handle variables named `I` or `Q` (they collided with
+SymPy's own reserved names). That's fixed now — any variable name works, including `I` and `Q`.
 
 On the other hand Phi would be recognized and afterwards be generated to \\Phi (except of in the Delta Phi term, but i am sure you will change the \\Phi into \\varphi )
 
@@ -127,9 +136,14 @@ Dont: 5\*10\*\*-3 but instead: 0.005
 
 Some of the Calculation features do not work yet (will they ever?).   
 For example, it is not yet possible to calculate a sin cos,tan etc.
-*Update* You can now calculate with pi (just writing pi). with the sin, cos and tan, and also exp().
+*Update*: calculation now goes through SymPy/NumPy properly (instead of a hand-rolled string
+substitution), so `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `exp`, `log`,
+`sqrt`, `Abs` and `pi` all work out of the box — not just the handful that used to be special-cased.
 
-If you have Equations with those in it, use the pythonian equation for the error that is prometed on the output beneave the Latex Code and use it in Python oder Wolframalpha.
+You'll also get a live LaTeX preview as you type the formula, a "Kopieren" button next to the
+Python-format equation (handy for pasting into WolframAlpha), and the result is now shown as
+`Wert ± Fehler`, rounded to a sensible number of digits, instead of a raw JSON blob. Your last
+formula/variables/values are remembered in the browser (localStorage) so a refresh doesn't lose them.
 
 Undefined
 ---------
@@ -142,7 +156,9 @@ Text me, open an issue, or play with the generator until it works. 
 Known Bugs:  
  
 
-*   sin, cos, tan not working
-*   Q and I not working as characters
+*   ~~sin, cos, tan not working~~ fixed
+*   ~~Q and I not working as characters~~ fixed
+
+Open an issue on GitHub if you find another one.
 
 

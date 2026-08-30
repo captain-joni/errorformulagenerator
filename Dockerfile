@@ -1,15 +1,13 @@
-FROM node:16
+FROM python:3.12-slim
+
 WORKDIR /app
-RUN apt update
-RUN apt install python3-pip
 
-RUN pip install numpy
-RUN pip install sympy
-RUN pip install pytexit
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN npm install body-parser
-RUN npm install express
-COPY package-lock.json ./
-RUN npm install package-lock.json
-COPY . .
-CMD ["npm", "start"]
+COPY app ./app
+COPY public ./public
+
+EXPOSE 3000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000"]

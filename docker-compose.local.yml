@@ -1,0 +1,12 @@
+
+# Local/standalone run -- no Traefik, no external network, just the app on
+# localhost. Use docker-compose.yml instead for the reverse-proxied deployment.
+#
+# Usage: docker compose -f docker-compose.local.yml up --build
+
+services:
+  diff:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
