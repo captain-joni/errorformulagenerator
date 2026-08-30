@@ -1,44 +1,45 @@
 :root {
-    --bg: #f6f0ff;
-    --surface: #fffdfb;
-    --surface-muted: #f1e6fb;
-    --border: #ddc7f2;
-    --text: #2a1e3d;
-    --text-muted: #7c6a92;
-    --accent: #9153ff;
-    --accent-hover: #7c3aed;
+    --bg: #ede4f7;
+    --surface: #fffbf5;
+    --surface-muted: #e9dcf5;
+    --border: #ddccec;
+    --text: #3d3350;
+    --text-muted: #8b7fa0;
+    --accent: #9c7bc9;
+    --accent-hover: #8a67b8;
     --accent-contrast: #ffffff;
-    --accent2: #ff8c42;
-    --accent2-hover: #f7740f;
-    --accent2-contrast: #2a1206;
-    --danger-bg: #fdecea;
-    --danger-border: #f2b8b5;
-    --danger-text: #7a1f1a;
-    --code-bg: #efe1fb;
-    --shadow: 0 1px 2px rgba(120, 60, 200, 0.07), 0 10px 28px rgba(120, 60, 200, 0.12);
+    --accent2: #e2914c;
+    --accent2-hover: #cf7f3c;
+    --accent2-contrast: #fffaf4;
+    --accent2-soft: #f6e6d2;
+    --danger-bg: #fbeceb;
+    --danger-border: #f0c4c1;
+    --danger-text: #7a3a34;
+    --code-bg: #e9dcf5;
+    --shadow: 0 1px 2px rgba(80, 60, 100, 0.05), 0 6px 18px rgba(80, 60, 100, 0.07);
     --radius: 16px;
-    --gradient: linear-gradient(120deg, var(--accent), #c04dff 45%, var(--accent2));
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #180f26;
-        --surface: #241834;
-        --surface-muted: #2f2143;
-        --border: #46325f;
-        --text: #f5eeff;
-        --text-muted: #b6a3cf;
-        --accent: #b98bff;
-        --accent-hover: #cba3ff;
-        --accent-contrast: #1a1030;
-        --accent2: #ffab5e;
-        --accent2-hover: #ffbb7a;
-        --accent2-contrast: #2a1206;
-        --danger-bg: #3a1f1f;
-        --danger-border: #6b3634;
-        --danger-text: #f5b8b3;
-        --code-bg: #322347;
-        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 32px rgba(150, 80, 255, 0.18);
+        --bg: #221a30;
+        --surface: #2c2239;
+        --surface-muted: #362a47;
+        --border: #47385c;
+        --text: #f1e9fb;
+        --text-muted: #b3a3c8;
+        --accent: #c3a4e8;
+        --accent-hover: #d2b8ee;
+        --accent-contrast: #221a30;
+        --accent2: #e6a165;
+        --accent2-hover: #edb27e;
+        --accent2-contrast: #2c1808;
+        --accent2-soft: #402f22;
+        --danger-bg: #3a2523;
+        --danger-border: #63413c;
+        --danger-text: #f0b3ab;
+        --code-bg: #362a47;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.25);
     }
 }
 
@@ -47,50 +48,21 @@
 }
 
 html {
-    accent-color: var(--accent);
+    accent-color: var(--accent2);
 }
 
 body {
-    position: relative;
     margin: 0;
     padding: 32px 16px 64px;
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.5;
-    overflow-x: hidden;
-}
-
-/* funky blurred blobs floating behind the content -- purely decorative */
-body::before, body::after {
-    content: "";
-    position: fixed;
-    z-index: -1;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.35;
-    pointer-events: none;
-}
-
-body::before {
-    top: -120px;
-    left: -100px;
-    width: 340px;
-    height: 340px;
-    background: var(--accent);
-}
-
-body::after {
-    bottom: -140px;
-    right: -110px;
-    width: 380px;
-    height: 380px;
-    background: var(--accent2);
 }
 
 ::selection {
-    background: var(--accent2);
-    color: var(--accent2-contrast);
+    background: var(--accent2-soft);
+    color: var(--text);
 }
 
 main {
@@ -107,14 +79,9 @@ main {
 }
 
 .page-header h1 {
-    font-size: 1.8em;
+    font-size: 1.7em;
     margin: 0 0 8px;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
     color: var(--accent);
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
 }
 
 .subtitle {
@@ -159,27 +126,17 @@ code {
 }
 
 .card {
-    position: relative;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 24px 24px 24px;
-    overflow: hidden;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 5px;
-    background: var(--gradient);
+    padding: 22px 24px 24px;
 }
 
 .card h2 {
     font-size: 1.05em;
     margin: 0 0 4px;
+    color: var(--accent);
 }
 
 .hint {
@@ -210,7 +167,7 @@ textarea, input[type="text"] {
 textarea:focus, input[type="text"]:focus {
     outline: none;
     border-color: var(--accent2);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent2) 30%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent2) 18%, transparent);
 }
 
 textarea {
@@ -233,7 +190,7 @@ button {
     cursor: pointer;
     border-radius: 10px;
     border: none;
-    transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
 button:active {
@@ -242,15 +199,14 @@ button:active {
 
 .primary-button {
     margin-top: 16px;
-    padding: 11px 22px;
-    background: linear-gradient(120deg, var(--accent), #c04dff);
-    color: var(--accent-contrast);
-    font-weight: 700;
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent);
+    padding: 11px 20px;
+    background: var(--accent2);
+    color: var(--accent2-contrast);
+    font-weight: 600;
 }
 
 .primary-button:hover {
-    filter: brightness(1.08);
+    background: var(--accent2-hover);
 }
 
 .secondary-button {
@@ -270,7 +226,6 @@ button:active {
     color: var(--accent2);
     font-size: 0.85em;
     padding: 2px 0;
-    font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 2px;
 }
@@ -330,8 +285,7 @@ button:active {
 
 .var-row--constant {
     grid-template-columns: 1fr auto;
-    background: color-mix(in srgb, var(--accent2) 10%, var(--surface-muted));
-    border: 1px dashed color-mix(in srgb, var(--accent2) 45%, transparent);
+    background: var(--accent2-soft);
 }
 
 .const-info {
@@ -393,8 +347,8 @@ button:active {
 
 .result-box {
     margin-top: 14px;
-    font-size: 1.4em;
-    font-weight: 800;
+    font-size: 1.3em;
+    font-weight: 700;
     color: var(--accent2);
 }
 
@@ -405,16 +359,15 @@ button:active {
 }
 
 .donate-button {
-    background: linear-gradient(120deg, var(--accent2), #ffb238);
+    background: var(--accent2);
     color: var(--accent2-contrast);
     border: none;
-    padding: 11px 22px;
-    font-weight: 700;
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent2) 45%, transparent);
+    padding: 10px 20px;
+    font-weight: 600;
 }
 
 .donate-button:hover {
-    filter: brightness(1.06);
+    background: var(--accent2-hover);
 }
 
 @media (max-width: 560px) {
