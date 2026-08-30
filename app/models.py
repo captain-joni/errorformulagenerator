@@ -8,8 +8,17 @@ class PreviewRequest(BaseModel):
     formula: str
 
 
+class VariableInfo(BaseModel):
+    name: str
+    is_known_constant: bool = False
+    constant_value: float | None = None
+    constant_label: str | None = None
+    constant_unit: str | None = None
+
+
 class PreviewResponse(BaseModel):
     latex: str
+    variables: list[VariableInfo] = Field(default_factory=list)
 
 
 class DifferentiateRequest(BaseModel):

@@ -1,10 +1,14 @@
 // Fehlerformel Generator -- frontend logic.
-// Talks to the FastAPI backend (app/main.py) over the three JSON endpoints:
-//   POST /api/preview        { formula } -> { latex }
+// Talks to the FastAPI backend (app/main.py) over three JSON endpoints:
+//   POST /api/preview        { formula } -> { latex, variables: [{name, is_known_constant, ...}] }
 //   POST /api/differentiate  { formula, variables } -> { original_latex, latex, python_equation }
 //   POST /api/calc           { formula, error_formula, values } -> { value, error, formatted }
+//
+// The variable panel is generated entirely from `variables` in the preview
+// response -- the user never types a variable name, only ticks checkboxes
+// and fills in numbers.
 
-const STORAGE_KEY = 'efg.state.v1';
+const STORAGE_KEY = 'efg.state.v2';
 
 // ---------- small helpers ----------
 
@@ -35,7 +39,7 @@ async function postJSON(url, body) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
         });
-    } catch (networkError) {
+    } catch {
         throw new Error('Server nicht erreichbar. Läuft der Server?');
     }
     const data = await response.json().catch(() => ({}));
@@ -50,6 +54,15 @@ function renderLatex(container, latex) {
     if (window.MathJax && MathJax.typesetPromise) {
         MathJax.typesetPromise([container]);
     }
+}
+
+function formatNumber(n) {
+    if (n === null || n === undefined) return '';
+    const num = Number(n);
+    if (!Number.isFinite(num)) return String(num);
+    const [mantissa, exponent] = num.toPrecision(10).split('e');
+    const trimmed = mantissa.includes('.') ? mantissa.replace(/0+$/, '').replace(/\.$/, '') : mantissa;
+    return exponent !== undefined ? `${trimmed}e${exponent}` : trimmed;
 }
 
 // ---------- persistence (per-viewer convenience, not synced anywhere) ----------
@@ -71,67 +84,127 @@ function saveState(patch) {
     }
 }
 
-// ---------- dynamic per-variable value/error inputs ----------
-
-function updateVariableInputs() {
-    const variables = document.getElementById('variables').value.split(',').map((v) => v.trim());
-    const container = document.getElementById('variable-container');
+function savePerVariable(name, patch) {
     const state = loadState();
-    const savedValues = state.varValues || {};
-    container.innerHTML = '';
-
-    variables.forEach((variable) => {
-        if (!variable) return;
-
-        const inputDiv = document.createElement('div');
-        inputDiv.className = 'dynamic-input';
-
-        const label = document.createElement('label');
-        label.textContent = `Variable ${variable}:`;
-        inputDiv.appendChild(label);
-
-        const valueInput = document.createElement('input');
-        valueInput.type = 'text';
-        valueInput.dataset.role = 'value';
-        valueInput.dataset.variable = variable;
-        valueInput.placeholder = `Wert für ${variable}`;
-        valueInput.value = savedValues[variable]?.value ?? '';
-        inputDiv.appendChild(valueInput);
-
-        const errorInput = document.createElement('input');
-        errorInput.type = 'text';
-        errorInput.dataset.role = 'error';
-        errorInput.dataset.variable = variable;
-        errorInput.placeholder = `Fehler für ${variable}`;
-        errorInput.value = savedValues[variable]?.error ?? '';
-        inputDiv.appendChild(errorInput);
-
-        container.appendChild(inputDiv);
-    });
-
-    container.addEventListener('input', persistVariableValues);
+    const perVariable = state.perVariable || {};
+    perVariable[name] = { ...perVariable[name], ...patch };
+    saveState({ perVariable });
 }
 
-function persistVariableValues() {
-    const container = document.getElementById('variable-container');
-    const varValues = {};
-    container.querySelectorAll('input[data-variable]').forEach((input) => {
-        const name = input.dataset.variable;
-        varValues[name] = varValues[name] || { value: '', error: '' };
-        varValues[name][input.dataset.role] = input.value;
+// ---------- variable panel ----------
+
+let currentVariables = []; // last list of {name, is_known_constant, constant_value, constant_label, constant_unit}
+
+function buildVariableRow(info) {
+    const state = loadState();
+    const overrides = new Set(state.overrides || []);
+    const saved = (state.perVariable || {})[info.name] || {};
+    const treatAsConstant = info.is_known_constant && !overrides.has(info.name);
+
+    const row = document.createElement('div');
+    row.className = 'var-row' + (treatAsConstant ? ' var-row--constant' : '');
+    row.dataset.variable = info.name;
+
+    if (treatAsConstant) {
+        row.innerHTML = `
+            <div class="const-info">
+                <span class="var-name">${info.name}</span>
+                <span class="const-label">${info.constant_label}</span>
+                <span class="const-value">${formatNumber(info.constant_value)}${info.constant_unit ? ' ' + info.constant_unit : ''}</span>
+            </div>
+            <button type="button" class="link-button" data-action="use-as-variable">als Variable verwenden</button>
+        `;
+        row.querySelector('[data-action="use-as-variable"]').addEventListener('click', () => {
+            const s = loadState();
+            const ov = new Set(s.overrides || []);
+            ov.add(info.name);
+            saveState({ overrides: [...ov] });
+            renderVariablePanel();
+        });
+        return row;
+    }
+
+    row.innerHTML = `
+        <span class="var-name">${info.name}</span>
+        <label class="var-check">
+            <input type="checkbox" data-role="error-toggle" />
+            fehlerbehaftet
+        </label>
+        <input type="text" inputmode="decimal" data-role="value" placeholder="Wert" />
+        <input type="text" inputmode="decimal" data-role="error" placeholder="Δ${info.name}" disabled />
+        ${info.is_known_constant ? '<button type="button" class="link-button" data-action="use-as-constant">als Konstante behandeln</button>' : ''}
+    `;
+
+    const checkbox = row.querySelector('[data-role="error-toggle"]');
+    const valueInput = row.querySelector('[data-role="value"]');
+    const errorInput = row.querySelector('[data-role="error"]');
+
+    checkbox.checked = Boolean(saved.errorCarrying);
+    errorInput.disabled = !checkbox.checked;
+    valueInput.value = saved.value ?? '';
+    errorInput.value = saved.error ?? '';
+
+    checkbox.addEventListener('change', () => {
+        errorInput.disabled = !checkbox.checked;
+        savePerVariable(info.name, { errorCarrying: checkbox.checked });
     });
-    saveState({ varValues });
+    valueInput.addEventListener('input', () => savePerVariable(info.name, { value: valueInput.value }));
+    errorInput.addEventListener('input', () => savePerVariable(info.name, { error: errorInput.value }));
+
+    const constantButton = row.querySelector('[data-action="use-as-constant"]');
+    if (constantButton) {
+        constantButton.addEventListener('click', () => {
+            const s = loadState();
+            const ov = new Set(s.overrides || []);
+            ov.delete(info.name);
+            saveState({ overrides: [...ov] });
+            renderVariablePanel();
+        });
+    }
+
+    return row;
 }
 
-function collectVariableValues() {
-    const container = document.getElementById('variable-container');
+function renderVariablePanel() {
+    const panel = document.getElementById('variable-panel');
+    panel.innerHTML = '';
+    if (currentVariables.length === 0) {
+        panel.innerHTML = '<p class="empty-hint">Noch keine Formel erkannt.</p>';
+        return;
+    }
+    currentVariables.forEach((info) => panel.appendChild(buildVariableRow(info)));
+}
+
+function collectValuesForCalc() {
+    const state = loadState();
+    const overrides = new Set(state.overrides || []);
     const values = {};
-    container.querySelectorAll('input[data-variable]').forEach((input) => {
-        const name = input.dataset.variable;
-        values[name] = values[name] || { value: '', error: '0' };
-        values[name][input.dataset.role] = input.value;
+
+    currentVariables.forEach((info) => {
+        if (info.is_known_constant && !overrides.has(info.name)) {
+            values[info.name] = { value: String(info.constant_value), error: '0' };
+            return;
+        }
+        const row = document.querySelector(`.var-row[data-variable="${CSS.escape(info.name)}"]`);
+        if (!row) return;
+        const value = row.querySelector('[data-role="value"]').value;
+        const checked = row.querySelector('[data-role="error-toggle"]').checked;
+        const error = checked ? row.querySelector('[data-role="error"]').value : '0';
+        values[info.name] = { value, error };
     });
     return values;
+}
+
+function collectErrorCarryingVariables() {
+    const state = loadState();
+    const overrides = new Set(state.overrides || []);
+    return currentVariables
+        .filter((info) => !(info.is_known_constant && !overrides.has(info.name)))
+        .filter((info) => {
+            const row = document.querySelector(`.var-row[data-variable="${CSS.escape(info.name)}"]`);
+            return row && row.querySelector('[data-role="error-toggle"]').checked;
+        })
+        .map((info) => info.name);
 }
 
 // ---------- state used between the "differentiate" and "calc" steps ----------
@@ -142,14 +215,18 @@ let currentErrorEquation = '';
 
 async function runPreview() {
     const formula = document.getElementById('formula').value;
-    const container = document.getElementById('latex-output_2');
+    const previewBox = document.getElementById('latex-output_2');
     if (!formula.trim()) {
-        container.textContent = '';
+        previewBox.textContent = '';
+        currentVariables = [];
+        renderVariablePanel();
         return;
     }
     try {
         const data = await postJSON('/api/preview', { formula });
-        renderLatex(container, data.latex);
+        renderLatex(previewBox, data.latex);
+        currentVariables = data.variables;
+        renderVariablePanel();
         showError('');
     } catch (err) {
         showError(err.message);
@@ -158,12 +235,18 @@ async function runPreview() {
 
 async function runDifferentiate() {
     const formula = document.getElementById('formula').value;
-    const variables = document.getElementById('variables_2').value.split(',').map((v) => v.trim()).filter(Boolean);
+    const variables = collectErrorCarryingVariables();
+
+    if (variables.length === 0) {
+        showError('Bitte mindestens eine Größe als fehlerbehaftet ankreuzen.');
+        return;
+    }
 
     try {
         const data = await postJSON('/api/differentiate', { formula, variables });
         currentErrorEquation = data.python_equation;
 
+        document.getElementById('error-formula-card').hidden = false;
         renderLatex(document.getElementById('latex-output'), data.latex);
         document.getElementById('python-equation').value = data.python_equation;
         showError('');
@@ -174,12 +257,12 @@ async function runDifferentiate() {
 
 async function runCalc() {
     if (!currentErrorEquation) {
-        showError('Bitte zuerst die Fehlerformel berechnen (Button oben).');
+        showError('Bitte zuerst die Fehlerformel berechnen (Schritt 2).');
         return;
     }
 
     const formula = document.getElementById('formula').value;
-    const values = collectVariableValues();
+    const values = collectValuesForCalc();
 
     try {
         const data = await postJSON('/api/calc', {
@@ -187,8 +270,7 @@ async function runCalc() {
             error_formula: currentErrorEquation,
             values,
         });
-        const resultDiv = document.getElementById('losung');
-        resultDiv.textContent = `Ergebnis: ${data.formatted}`;
+        document.getElementById('losung').textContent = `Ergebnis: ${data.formatted}`;
         showError('');
     } catch (err) {
         showError(err.message);
@@ -212,46 +294,23 @@ async function copyEquation() {
 
 // ---------- wiring ----------
 
-document.getElementById('variables').addEventListener('input', () => {
-    updateVariableInputs();
-    saveState({ variables: document.getElementById('variables').value });
-});
-
 document.getElementById('formula').addEventListener('input', debounce(() => {
     saveState({ formula: document.getElementById('formula').value });
+    document.getElementById('error-formula-card').hidden = true;
+    currentErrorEquation = '';
     runPreview();
 }, 400));
 
-document.getElementById('variables_2').addEventListener('input', () => {
-    saveState({ variables2: document.getElementById('variables_2').value });
-});
-
-document.getElementById('tex-anzeigen').addEventListener('click', (e) => {
-    e.preventDefault();
-    runPreview();
-});
-
-document.getElementById('fehlerformel').addEventListener('click', (e) => {
-    e.preventDefault();
-    runDifferentiate();
-});
-
-document.getElementById('ausrechnen').addEventListener('click', (e) => {
-    e.preventDefault();
-    runCalc();
-});
-
+document.getElementById('fehlerformel').addEventListener('click', runDifferentiate);
+document.getElementById('ausrechnen').addEventListener('click', runCalc);
 document.getElementById('copy-equation').addEventListener('click', copyEquation);
 
 // ---------- restore persisted state on load ----------
 
 (function restore() {
     const state = loadState();
-    if (state.formula) document.getElementById('formula').value = state.formula;
-    if (state.variables2) document.getElementById('variables_2').value = state.variables2;
-    if (state.variables) {
-        document.getElementById('variables').value = state.variables;
-        updateVariableInputs();
+    if (state.formula) {
+        document.getElementById('formula').value = state.formula;
+        runPreview();
     }
-    if (state.formula) runPreview();
 })();

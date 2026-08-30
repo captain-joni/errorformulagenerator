@@ -3,63 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <title>Error Formel</title>
 </head>
 <body>
 
-    <h1>Captain Joni's - Fehlerformel Generator</h1>
-    <div class="frontext">
-        Na ihr PaP-Nasen, kein Bock auf Fehlerrechnung? <br>
-        Ich auch nicht! <br>
-        Dieser Fehlerformel Generator darf allen verlorenen Seelen helfen, die Ihre Protokolle etwas schneller schreiben wollen.
-        Aber dieser Generator ist crude zusammengewürfelt und nicht nutzerfreundlich! <br>
-        Damit du ihn also benutzen kannst, lese bitte die
-        <a href="https://github.com/captain-joni/errorformulagenerator#readme" target="_blank">Dokumentation</a>. <br>
-        Bugs bitte auf Github reporten. <br>
-        Habt euch gegenseitig schön lieb und denkt dran: <br>
-        Too much thinking kills the joy ~ Captain Joni &#10084;
-    </div>
+    <header class="page-header">
+        <h1>Captain Joni's Fehlerformel Generator</h1>
+        <p class="subtitle">
+            Na ihr PaP-Nasen, kein Bock auf Fehlerrechnung? Ich auch nicht! Dieser Generator hilft
+            allen verlorenen Seelen, ihre Protokolle etwas schneller zu schreiben.
+        </p>
+    </header>
 
-    <div id="error-banner" class="error-banner" hidden></div>
+    <details class="intro-card">
+        <summary>Wie benutze ich das? (Kurzanleitung)</summary>
+        <ol>
+            <li>Formel im Python-Format eintippen, ohne führendes <code>E = </code> (z.&nbsp;B. <code>(1)/(2)*m*v**2</code>). Die LaTeX-Vorschau aktualisiert sich live.</li>
+            <li>In der Variablenliste ankreuzen, welche Größen fehlerbehaftet sind, dann auf „Fehlerformel berechnen“.</li>
+            <li>Werte (und ggf. Fehler) eintragen und auf „Rechne, Computer!“ klicken.</li>
+        </ol>
+        <p>
+            Erkannte Konstanten (z.&nbsp;B. <code>pi</code>, <code>e</code>, <code>c</code>, <code>h</code>) werden
+            automatisch mit ihrem exakten Wert eingesetzt -- falls du den Buchstaben lieber als eigene Variable
+            benutzen willst, kannst du das pro Größe umschalten.
+        </p>
+        <p>
+            Bugs bitte auf <a href="https://github.com/captain-joni/errorformulagenerator" target="_blank" rel="noopener">GitHub</a> melden.
+            Habt euch gegenseitig schön lieb -- Too much thinking kills the joy ~ Captain Joni &#10084;
+        </p>
+    </details>
 
-    <form id="formulaForm">
-        <label for="formula">Gib hier deine Formel ein: (im Python Formel Format z.B (1)/(2)*m*v**2)</label>
-        <textarea id="formula" rows="4" cols="50"></textarea>
+    <div id="error-banner" class="error-banner" role="alert" hidden></div>
 
-        <h2>Formel zum Überprüfen: <span class="hint">(Live-Vorschau)</span></h2>
-        <div id="latex-output_2" class="latex-box"></div>
+    <main>
+        <section class="card">
+            <h2>1. Formel</h2>
+            <label for="formula">Formel im Python-Format (z.&nbsp;B. <code>(1)/(2)*m*v**2</code>)</label>
+            <textarea id="formula" rows="3" spellcheck="false" placeholder="(1)/(2)*m*v**2"></textarea>
+            <div class="latex-box" id="latex-output_2" aria-live="polite"></div>
+        </section>
 
-        <label for="variables_2">Welche Variablen sind Fehlerbehaftet? (kommagetrennt)</label>
-        <input type="text" id="variables_2" />
+        <section class="card">
+            <h2>2. Variablen &amp; Werte</h2>
+            <p class="hint">Wird automatisch aus der Formel erkannt. Häkchen setzen, wenn eine Größe fehlerbehaftet ist -- Wert (und bei Häkchen den Fehler) gleich mit eintragen.</p>
+            <div id="variable-panel" class="variable-panel">
+                <p class="empty-hint">Noch keine Formel erkannt.</p>
+            </div>
+            <button id="fehlerformel" type="button" class="primary-button">Fehlerformel berechnen</button>
+        </section>
 
-        <div class="form-buttons">
-            <button id="tex-anzeigen" type="button">Tex anzeigen</button>
-            <button id="fehlerformel" type="button">Fehlerformel berechnen</button>
-        </div>
-    </form>
+        <section class="card" id="error-formula-card" hidden>
+            <h2>3. Fehlerformel</h2>
+            <div class="latex-box" id="latex-output" aria-live="polite"></div>
+            <label for="python-equation">Python-Format (zum Kopieren, z.&nbsp;B. für WolframAlpha)</label>
+            <div class="copy-row">
+                <input id="python-equation" type="text" readonly />
+                <button id="copy-equation" type="button" class="secondary-button">Kopieren</button>
+            </div>
+        </section>
 
-    <h2>Fehlerformel:</h2>
-    <div id="latex-output" class="latex-box"></div>
-    <div class="output-row">
-        <label for="python-equation">Python-Format (zum Kopieren, z.B. für WolframAlpha):</label>
-        <div class="copy-row">
-            <input id="python-equation" type="text" readonly />
-            <button id="copy-equation" type="button" class="copy-button">Kopieren</button>
-        </div>
-    </div>
+        <section class="card">
+            <h2>4. Berechnen</h2>
+            <p class="hint">Nutzt die Werte aus Schritt 2 -- fehlerbehaftete Größen brauchen dort auch einen Δ-Wert.</p>
+            <button id="ausrechnen" type="button" class="primary-button">Rechne, Computer!</button>
+            <div id="losung" class="result-box" aria-live="polite"></div>
+        </section>
+    </main>
 
-    <h2>Berechnen</h2>
-    <label for="variables">Mit welchen Variablen soll gerechnet werden?</label>
-    <input class="variabletext" type="text" id="variables" />
-    <div id="variable-container"></div>
-    <button id="ausrechnen" type="button">Rechne, Computer!</button>
-    <div id="losung" class="result-box"></div>
-
-    <a href="https://paypal.me/captainjoni" target="_blank">
-        <button class="spendenbutton" type="button">Support me and buy me a Tea</button>
-    </a>
+    <footer class="page-footer">
+        <a href="https://paypal.me/captainjoni" target="_blank" rel="noopener">
+            <button type="button" class="donate-button">Support me and buy me a Tea</button>
+        </a>
+    </footer>
 
     <script src="app.js"></script>
 </body>

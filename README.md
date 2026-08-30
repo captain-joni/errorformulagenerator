@@ -27,7 +27,8 @@ docker compose -f docker-compose.local.yml up --build
 Usage
 -----
 
-Plot the formula, that you want to calculate the Gaussian Errorformula for, in the first Input Field.
+Type the formula you want the Gaussian error formula for into the first field. A live LaTeX preview
+appears as you type.
 
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_1.png?raw=true)
 
@@ -66,63 +67,58 @@ Examples:
 | --- | --- |
 | Potenz | `a**n` |
 
-Decide for Variables
---------------------
+Supported functions/constants: `sin cos tan asin acos atan atan2 sinh cosh tanh asinh acosh atanh exp
+log sqrt Abs pi`.
 
-For the Erroformula, the Program needs to know which Variables have Errors.  
-Input the Variables (!!exactly like in the formula!!) into the second Field and seperate them via Kommas.  
-It is fine, that the formula has more Variables that what you put in here.
+Variables — no typing required
+-------------------------------
+
+The variable panel is generated automatically from whatever you typed above — you never type a
+variable name yourself. Each detected variable gets a row with a **"fehlerbehaftet" checkbox**: tick it
+if that quantity carries a measurement uncertainty. Fill in the value (and, if ticked, the error Δ)
+right there — this is also where the numbers for the final calculation come from, so you only enter
+each value once.
 
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_2.png?raw=true)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_3.png?raw=true)
+
+### Known constants
+
+If a detected variable name is a mathematical or physical constant with an *exactly* known value
+(`e`, `c`, `h`, `hbar`, `kB`, `NA`, `eps0`, `mu0`, `g`) it shows up as a locked constant chip with its
+value filled in automatically, instead of an input row. If you actually wanted that letter as your own
+variable (e.g. `c` for a heat capacity), click "als Variable verwenden" to turn it back into a normal
+input row. `pi` is always the mathematical constant and never shows up as a variable at all.
 
 ### Note
 
-Older versions of this generator couldn't handle variables named `I` or `Q` (they collided with
-SymPy's own reserved names). That's fixed now — any variable name works, including `I` and `Q`.
+Any variable name works now, including SymPy's historically-reserved single letters like `I` and `Q` —
+older versions of this generator couldn't handle those.
 
 On the other hand Phi would be recognized and afterwards be generated to \\Phi (except of in the Delta Phi term, but i am sure you will change the \\Phi into \\varphi )
-
-Check your formating
---------------------
-
-You can check if you ploted the equation the right way, by pressing:
-
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_3.png?raw=true)
-
-
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_4.png?raw=true)
-
-Then your equation will be generated into Latex, so you can check for mistakes. (They happen often, so doublecheck)!
 
 Calculate the Errorformula
 --------------------------
 
-By pressing this Button, the error Formula will be generated.
+Press "Fehlerformel berechnen" to symbolically build the error formula from whichever variables you
+ticked as fehlerbehaftet.
 
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_5.png?raw=true)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_4.png?raw=true)
 
-And you will be promted with the output json, where you can extract the Latex Code of the Formula, the pythonian equation and the Latex Code Rendered, so you can check for errors again. The error Formula will be generated without the square root, because for longer equations it is easier to tex. The calculated value below will be with the square root.
-
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_6.png?raw=true)
+You get the LaTeX-rendered formula plus a read-only, copyable Python-format equation (handy for pasting
+into WolframAlpha or your own script). The error formula is generated without the outer square root,
+because that's easier to read/typeset for long formulas — the square root is applied when you calculate
+a numeric result instead.
 
 Calculate
 ---------
 
-If you want to calculate the Equation with the respective Error, you can now procced to the “Berechnen Section”
+Everything needed is already filled in from the variable panel above — just press "Rechne, Computer!".
 
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_7.png?raw=true)
+![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_5.png?raw=true)
 
-In this field you will need to enter \*every\* Variable that is used in the Formula, since now the Calculater wants to calculate the eqautions numericaly. Seperate the Variables with kommas, like before.   
-Everytime you click, or change/add a Variable in this field, new html input fields for the corresponding Variable will be generated.
-
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_8.png?raw=true)
-
-Plot in your Values for the Variables and their Error. If a Variable has no error, just type 0 (zero). (Every field must be filled out).
-
-After that click on ‘Rechne,Computer!’ and recieve your Values:
-Note that here the computation is done with the square root, so you dont have to take the square root of this value!
-
-![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_9.png?raw=true)
+The result is shown as `Wert ± Fehler`, rounded to a sensible number of digits — the square root has
+already been applied here, you don't need to take it yourself.
 
 ### Note
 
@@ -134,31 +130,24 @@ Expressions like 5\*10\*\*-3 are not permitted yet. Just write it out:
 
 Dont: 5\*10\*\*-3 but instead: 0.005
 
-Some of the Calculation features do not work yet (will they ever?).   
-For example, it is not yet possible to calculate a sin cos,tan etc.
 *Update*: calculation now goes through SymPy/NumPy properly (instead of a hand-rolled string
 substitution), so `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `exp`, `log`,
 `sqrt`, `Abs` and `pi` all work out of the box — not just the handful that used to be special-cased.
 
-You'll also get a live LaTeX preview as you type the formula, a "Kopieren" button next to the
-Python-format equation (handy for pasting into WolframAlpha), and the result is now shown as
-`Wert ± Fehler`, rounded to a sensible number of digits, instead of a raw JSON blob. Your last
-formula/variables/values are remembered in the browser (localStorage) so a refresh doesn't lose them.
+Your last formula and every variable's value/error are remembered in the browser (localStorage) so a
+refresh doesn't lose them.
 
 Undefined
 ---------
 
-If you encounter this, either you made a mistake, or you found another symbol that doens't work.   
-Text me, open an issue, or play with the generator until it works. 
+If you encounter this, either you made a mistake, or you found another symbol that doens't work.
+Text me, open an issue, or play with the generator until it works.
 
 ### Bugs
 
-Known Bugs:  
- 
+Known Bugs:
 
 *   ~~sin, cos, tan not working~~ fixed
 *   ~~Q and I not working as characters~~ fixed
 
 Open an issue on GitHub if you find another one.
-
-

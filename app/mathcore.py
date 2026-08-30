@@ -8,6 +8,7 @@ see CLAUDE.md for why that matters and what it replaces.
 from __future__ import annotations
 
 import math
+import re
 
 import numpy as np
 import sympy as sp
@@ -41,6 +42,29 @@ _CORE_CONSTRUCTORS = {
 }
 _SAFE_LOCALS = {**_ALLOWED_CALLABLES, **_ALLOWED_CONSTANTS, **_CORE_CONSTRUCTORS}
 
+# Variable names that are exactly-known constants (mathematical, or SI base
+# units fixed by definition since the 2019 redefinition -- these have *zero*
+# uncertainty, not just a small one). Used only as a UI convenience: the
+# frontend offers to auto-fill the value and skip asking for an error, but
+# the user can always override a name here and use it as an ordinary
+# variable instead (e.g. "c" for a heat capacity, "g" for a coefficient).
+# `pi` is deliberately not in this table -- it's already a real SymPy
+# constant handled in `_ALLOWED_CONSTANTS`/`parse_formula`, so it never shows
+# up as a free variable in the first place.
+KNOWN_CONSTANTS: dict[str, dict[str, object]] = {
+    "e": {"value": math.e, "label": "Eulersche Zahl", "unit": ""},
+    "c": {"value": 299792458, "label": "Lichtgeschwindigkeit im Vakuum (exakt, SI)", "unit": "m/s"},
+    "h": {"value": 6.62607015e-34, "label": "Planck-Konstante (exakt, SI)", "unit": "J·s"},
+    "hbar": {"value": 6.62607015e-34 / (2 * math.pi), "label": "reduzierte Planck-Konstante", "unit": "J·s"},
+    "kB": {"value": 1.380649e-23, "label": "Boltzmann-Konstante (exakt, SI)", "unit": "J/K"},
+    "NA": {"value": 6.02214076e23, "label": "Avogadro-Konstante (exakt, SI)", "unit": "1/mol"},
+    "eps0": {"value": 8.8541878128e-12, "label": "elektrische Feldkonstante", "unit": "F/m"},
+    "mu0": {"value": 1.25663706212e-6, "label": "magnetische Feldkonstante", "unit": "N/A²"},
+    "g": {"value": 9.80665, "label": "Normfallbeschleunigung (Standardwert, ggf. anpassen)", "unit": "m/s²"},
+}
+
+_IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z_0-9]*")
+
 
 class FormulaError(ValueError):
     """A user-supplied formula/variable list/value couldn't be processed.
@@ -72,8 +96,66 @@ def parse_formula(formula: str) -> sp.Expr:
     return expr
 
 
+_DELTA_PREFIX_RE = re.compile(r"^Delta(?P<rest>[A-Za-z_][A-Za-z0-9_]*)$")
+
+
 def to_latex(expr: sp.Expr) -> str:
-    return sp.latex(expr)
+    """Render an expression as LaTeX, prettying up `DeltaX` symbols into `\\Delta_{X}`.
+
+    Purely cosmetic (display only -- the `DeltaX` naming convention used
+    everywhere else, e.g. `evaluate()`'s variable bindings, is untouched):
+    SymPy's printer already turns `Delta_m` into `\\Delta_{m}` via its
+    Greek-letter-name recognition, but not the no-separator `Deltam` this
+    app actually uses, so re-symbol it with an underscore just for display.
+    """
+    display_expr = expr.xreplace({
+        s: sp.Symbol(f"Delta_{match.group('rest')}")
+        for s in expr.free_symbols
+        if (match := _DELTA_PREFIX_RE.match(str(s)))
+    })
+    return sp.latex(display_expr)
+
+
+def detect_variables(formula: str, expr: sp.Expr) -> list[str]:
+    """Return the formula's free variable names, in the order they first appear.
+
+    Reading order (rather than sorted()) is what makes the auto-generated
+    variable panel in the UI feel like it matches what the user typed.
+    Function names (sin, cos, ...) match the same identifier regex but are
+    never in `expr.free_symbols`, so they're naturally excluded.
+    """
+    free_names = {str(s) for s in expr.free_symbols}
+    seen: list[str] = []
+    for match in _IDENTIFIER_RE.finditer(formula):
+        name = match.group(0)
+        if name in free_names and name not in seen:
+            seen.append(name)
+    return seen
+
+
+def variable_info(names: list[str]) -> list[dict]:
+    """Annotate variable names with known-constant info, for the frontend's
+    "treat this as a fixed constant?" UI. See `KNOWN_CONSTANTS`."""
+    info = []
+    for name in names:
+        const = KNOWN_CONSTANTS.get(name)
+        if const:
+            info.append({
+                "name": name,
+                "is_known_constant": True,
+                "constant_value": const["value"],
+                "constant_label": const["label"],
+                "constant_unit": const["unit"],
+            })
+        else:
+            info.append({
+                "name": name,
+                "is_known_constant": False,
+                "constant_value": None,
+                "constant_label": None,
+                "constant_unit": None,
+            })
+    return info
 
 
 def differentiate(formula: str, variables: list[str]) -> tuple[sp.Expr, sp.Expr]:

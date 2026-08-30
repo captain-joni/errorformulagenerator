@@ -41,7 +41,8 @@ def preview(req: PreviewRequest) -> PreviewResponse:
     """Render a formula as LaTeX so the user can check it parsed as intended."""
     try:
         expr = mathcore.parse_formula(req.formula)
-        return PreviewResponse(latex=mathcore.to_latex(expr))
+        names = mathcore.detect_variables(req.formula, expr)
+        return PreviewResponse(latex=mathcore.to_latex(expr), variables=mathcore.variable_info(names))
     except mathcore.FormulaError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
