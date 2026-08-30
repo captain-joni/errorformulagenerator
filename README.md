@@ -105,10 +105,15 @@ ticked as fehlerbehaftet.
 
 ![alt text](https://github.com/captain-joni/errorformulagenerator/blob/main/pictures/pic_4.png?raw=true)
 
-You get the LaTeX-rendered formula plus a read-only, copyable Python-format equation (handy for pasting
-into WolframAlpha or your own script). The error formula is generated without the outer square root,
-because that's easier to read/typeset for long formulas — the square root is applied when you calculate
-a numeric result instead.
+You get the LaTeX-rendered formula, a "LaTeX kopieren" button that copies the raw `$$...$$`-wrapped LaTeX
+source (paste straight into Overleaf, a Markdown doc, Jupyter, …), and a read-only, copyable Python-format
+equation (handy for pasting into WolframAlpha or your own script) — the same LaTeX-copy button is also
+available under the formula preview in step 1. The error formula is generated without the outer square
+root, because that's easier to read/typeset for long formulas — the square root is applied when you
+calculate a numeric result instead.
+
+Error terms are shown as `\Delta m` (i.e. "Δm", read as "the uncertainty of m") rather than a subscript --
+that's on purpose, since `\Delta_{m}` reads ambiguously once squared.
 
 Calculate
 ---------

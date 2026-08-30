@@ -56,6 +56,43 @@ function renderLatex(container, latex) {
     }
 }
 
+async function copyToClipboard(text, button) {
+    if (!text) {
+        showError('Nichts zum Kopieren vorhanden.');
+        return;
+    }
+    let copied = false;
+    try {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+    } catch {
+        // Fallback for browsers/contexts without the async Clipboard API (e.g. non-HTTPS)
+        const tmp = document.createElement('textarea');
+        tmp.value = text;
+        tmp.style.position = 'fixed';
+        tmp.style.opacity = '0';
+        document.body.appendChild(tmp);
+        tmp.focus();
+        tmp.select();
+        try {
+            copied = document.execCommand('copy');
+        } catch {
+            copied = false;
+        }
+        document.body.removeChild(tmp);
+    }
+
+    if (!copied) {
+        showError('Automatisches Kopieren nicht verfügbar -- bitte manuell markieren und kopieren (Strg+C).');
+        return;
+    }
+    if (button) {
+        const original = button.textContent;
+        button.textContent = 'Kopiert!';
+        setTimeout(() => { button.textContent = original; }, 1200);
+    }
+}
+
 function formatNumber(n) {
     if (n === null || n === undefined) return '';
     const num = Number(n);
@@ -210,6 +247,8 @@ function collectErrorCarryingVariables() {
 // ---------- state used between the "differentiate" and "calc" steps ----------
 
 let currentErrorEquation = '';
+let currentPreviewLatex = '';
+let currentErrorLatex = '';
 
 // ---------- actions ----------
 
@@ -218,6 +257,7 @@ async function runPreview() {
     const previewBox = document.getElementById('latex-output_2');
     if (!formula.trim()) {
         previewBox.textContent = '';
+        currentPreviewLatex = '';
         currentVariables = [];
         renderVariablePanel();
         return;
@@ -225,6 +265,7 @@ async function runPreview() {
     try {
         const data = await postJSON('/api/preview', { formula });
         renderLatex(previewBox, data.latex);
+        currentPreviewLatex = data.latex;
         currentVariables = data.variables;
         renderVariablePanel();
         showError('');
@@ -245,6 +286,7 @@ async function runDifferentiate() {
     try {
         const data = await postJSON('/api/differentiate', { formula, variables });
         currentErrorEquation = data.python_equation;
+        currentErrorLatex = data.latex;
 
         document.getElementById('error-formula-card').hidden = false;
         renderLatex(document.getElementById('latex-output'), data.latex);
@@ -277,21 +319,6 @@ async function runCalc() {
     }
 }
 
-async function copyEquation() {
-    const field = document.getElementById('python-equation');
-    if (!field.value) return;
-    try {
-        await navigator.clipboard.writeText(field.value);
-        const button = document.getElementById('copy-equation');
-        const original = button.textContent;
-        button.textContent = 'Kopiert!';
-        setTimeout(() => { button.textContent = original; }, 1200);
-    } catch {
-        field.select();
-        showError('Automatisches Kopieren nicht verfügbar -- Text wurde markiert, bitte manuell kopieren (Strg+C).');
-    }
-}
-
 // ---------- wiring ----------
 
 document.getElementById('formula').addEventListener('input', debounce(() => {
@@ -303,7 +330,16 @@ document.getElementById('formula').addEventListener('input', debounce(() => {
 
 document.getElementById('fehlerformel').addEventListener('click', runDifferentiate);
 document.getElementById('ausrechnen').addEventListener('click', runCalc);
-document.getElementById('copy-equation').addEventListener('click', copyEquation);
+
+document.getElementById('copy-equation').addEventListener('click', (e) => {
+    copyToClipboard(document.getElementById('python-equation').value, e.currentTarget);
+});
+document.getElementById('copy-latex-preview').addEventListener('click', (e) => {
+    copyToClipboard(currentPreviewLatex && `$$${currentPreviewLatex}$$`, e.currentTarget);
+});
+document.getElementById('copy-latex-error').addEventListener('click', (e) => {
+    copyToClipboard(currentErrorLatex && `$$${currentErrorLatex}$$`, e.currentTarget);
+});
 
 // ---------- restore persisted state on load ----------
 

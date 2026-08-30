@@ -44,6 +44,9 @@
             <label for="formula">Formel im Python-Format (z.&nbsp;B. <code>(1)/(2)*m*v**2</code>)</label>
             <textarea id="formula" rows="3" spellcheck="false" placeholder="(1)/(2)*m*v**2"></textarea>
             <div class="latex-box" id="latex-output_2" aria-live="polite"></div>
+            <div class="latex-toolbar">
+                <button id="copy-latex-preview" type="button" class="secondary-button">LaTeX kopieren</button>
+            </div>
         </section>
 
         <section class="card">
@@ -58,6 +61,9 @@
         <section class="card" id="error-formula-card" hidden>
             <h2>3. Fehlerformel</h2>
             <div class="latex-box" id="latex-output" aria-live="polite"></div>
+            <div class="latex-toolbar">
+                <button id="copy-latex-error" type="button" class="secondary-button">LaTeX kopieren</button>
+            </div>
             <label for="python-equation">Python-Format (zum Kopieren, z.&nbsp;B. für WolframAlpha)</label>
             <div class="copy-row">
                 <input id="python-equation" type="text" readonly />

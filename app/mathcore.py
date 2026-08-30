@@ -96,24 +96,33 @@ def parse_formula(formula: str) -> sp.Expr:
     return expr
 
 
-_DELTA_PREFIX_RE = re.compile(r"^Delta(?P<rest>[A-Za-z_][A-Za-z0-9_]*)$")
+def to_latex(expr: sp.Expr, delta_symbols: dict[sp.Symbol, str] | None = None) -> str:
+    """Render an expression as LaTeX.
 
-
-def to_latex(expr: sp.Expr) -> str:
-    """Render an expression as LaTeX, prettying up `DeltaX` symbols into `\\Delta_{X}`.
-
-    Purely cosmetic (display only -- the `DeltaX` naming convention used
-    everywhere else, e.g. `evaluate()`'s variable bindings, is untouched):
-    SymPy's printer already turns `Delta_m` into `\\Delta_{m}` via its
-    Greek-letter-name recognition, but not the no-separator `Deltam` this
-    app actually uses, so re-symbol it with an underscore just for display.
+    `delta_symbols`, when given, maps an auto-generated error-term symbol
+    (e.g. `Symbol('Deltam')`, as produced by `differentiate()` below) to its
+    base variable name (`"m"`); those specific symbols are printed as
+    `\\Delta m` instead of the literal word "Deltam". This only ever touches
+    the exact synthetic symbols `differentiate()` built -- never a
+    same-looking name that happens to occur in the user's own formula (e.g.
+    a variable genuinely called `DeltaT` for a temperature difference stays
+    printed as `DeltaT`, verbatim, since it isn't one of our error terms).
+    An earlier version of this function instead pattern-matched any symbol
+    named `Delta<something>` and rendered it as `\\Delta_{something}`
+    (subscript) -- both wrong: the subscript reads ambiguously once squared
+    (`\\Delta_{m}^{2}` looks like "Delta sub m, sup 2", not "(Delta m)
+    squared"), and the name-pattern match would misfire on a real variable
+    that happened to start with "Delta". Purely a display concern either
+    way -- `python_equation`/`evaluate()`'s bindings always use the literal
+    `DeltaX` name and are unaffected by any of this.
     """
-    display_expr = expr.xreplace({
-        s: sp.Symbol(f"Delta_{match.group('rest')}")
-        for s in expr.free_symbols
-        if (match := _DELTA_PREFIX_RE.match(str(s)))
-    })
-    return sp.latex(display_expr)
+    if not delta_symbols:
+        return sp.latex(expr)  # sympy's latex() treats an explicit symbol_names=None as a dict and breaks
+    symbol_names = {
+        symbol: f"\\Delta {sp.latex(sp.Symbol(base_name))}"
+        for symbol, base_name in delta_symbols.items()
+    }
+    return sp.latex(expr, symbol_names=symbol_names)
 
 
 def detect_variables(formula: str, expr: sp.Expr) -> list[str]:
@@ -158,15 +167,22 @@ def variable_info(names: list[str]) -> list[dict]:
     return info
 
 
-def differentiate(formula: str, variables: list[str]) -> tuple[sp.Expr, sp.Expr]:
+def differentiate(
+    formula: str, variables: list[str]
+) -> tuple[sp.Expr, sp.Expr, dict[sp.Symbol, str]]:
     """Build the Gaussian error-propagation formula for `formula`.
 
-    Returns (original_expr, error_expr). error_expr is the sum of squares
-    Sum_i( (df/dx_i * Delta_x_i)^2 ) *without* the outer square root -- kept
-    that way on purpose, same as the original tool: easier to read/typeset
-    for long formulas. The square root is applied at calculation time in
-    `evaluate()` instead. The uncertainty of a variable named `X` is always
-    referred to as `DeltaX` (no separator) in the generated formula.
+    Returns (original_expr, error_expr, delta_symbols). error_expr is the
+    sum of squares Sum_i( (df/dx_i * Delta_x_i)^2 ) *without* the outer
+    square root -- kept that way on purpose, same as the original tool:
+    easier to read/typeset for long formulas. The square root is applied at
+    calculation time in `evaluate()` instead. The uncertainty of a variable
+    named `X` is always referred to as `DeltaX` (no separator) in the
+    generated formula. `delta_symbols` maps each of those synthesized
+    `DeltaX` symbols back to its base variable name `X`, for `to_latex()` to
+    pretty-print with -- see `to_latex()` for why that has to happen here,
+    where we know for certain which symbols we generated, rather than by
+    guessing from a symbol's name later.
     """
     var_names = [v.strip() for v in variables if v.strip()]
     if not var_names:
@@ -175,14 +191,16 @@ def differentiate(formula: str, variables: list[str]) -> tuple[sp.Expr, sp.Expr]
     expr = parse_formula(formula)
 
     terms = []
+    delta_symbols: dict[sp.Symbol, str] = {}
     for name in var_names:
         symbol = sp.Symbol(name)
         derivative = sp.diff(expr, symbol)
         delta = sp.Symbol(f"Delta{name}")
+        delta_symbols[delta] = name
         terms.append((derivative * delta) ** 2)
 
     error_expr = sp.Add(*terms)
-    return expr, error_expr
+    return expr, error_expr, delta_symbols
 
 
 def evaluate(

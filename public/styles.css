@@ -286,6 +286,17 @@ button:active {
 
 /* ---------- misc ---------- */
 
+.latex-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.latex-toolbar .secondary-button {
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
+
 .copy-row {
     display: flex;
     gap: 10px;

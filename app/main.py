@@ -55,10 +55,10 @@ def preview(req: PreviewRequest) -> PreviewResponse:
 def differentiate(req: DifferentiateRequest) -> DifferentiateResponse:
     """Symbolically build the Gaussian error propagation formula."""
     try:
-        expr, error_expr = mathcore.differentiate(req.formula, req.variables)
+        expr, error_expr, delta_symbols = mathcore.differentiate(req.formula, req.variables)
         return DifferentiateResponse(
             original_latex=mathcore.to_latex(expr),
-            latex=mathcore.to_latex(error_expr),
+            latex=mathcore.to_latex(error_expr, delta_symbols),
             python_equation=str(error_expr),
         )
     except mathcore.FormulaError as exc:
