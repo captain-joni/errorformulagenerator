@@ -1,0 +1,26 @@
+
+version: '3'
+
+services:
+  diff:
+    build: .
+ #   ports:
+ #     - "3000:3001"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.diff.entrypoints=http"
+      - "traefik.http.routers.diff.rule=Host(`error.joni.science`)"   # domain eingeben
+      - "traefik.http.routers.diff.middlewares=redirect@file"
+      - "traefik.http.routers.diff-secure.entrypoints=https"
+      - "traefik.http.routers.diff-secure.rule=Host(`error.joni.science`)"  # domain eingeben
+      - "traefik.http.routers.diff-secure.tls=true"
+      - "traefik.http.routers.diff-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.diff-secure.service=diff"
+      - "traefik.http.services.diff.loadbalancer.server.port=3000"
+      - "traefik.docker.network=proxy"
+    networks:
+      - proxy
+networks:
+  proxy:
+    external: true
